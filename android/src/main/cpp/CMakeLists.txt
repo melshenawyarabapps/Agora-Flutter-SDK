@@ -9,6 +9,10 @@ set(LIBRARY_VERSION "0.1.0")
 
 project(${LIBRARY_NAME} VERSION ${LIBRARY_VERSION})
 
+# Add C++ standard library linking
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 set(SOURCES 
     "${CMAKE_CURRENT_SOURCE_DIR}/vm_util.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/iris_rtc_rendering_android.cc"
@@ -20,12 +24,18 @@ add_library(${LIBRARY_NAME} SHARED
 
 find_library(log-lib log)
 find_library(android-lib android)
+
+# Updated target_link_libraries with additional required libraries
 target_link_libraries(${LIBRARY_NAME}
         PRIVATE
         ${log-lib}
         ${android-lib}
         GLESv2
         EGL
+        atomic
+        # Add these to resolve C++ standard library linking issues
+        c++_shared
+        dl
         )
 
 # Support Android 15 16k page size
@@ -53,3 +63,9 @@ target_include_directories(${LIBRARY_NAME} PRIVATE
   "$<BUILD_INTERFACE:${THIRD_PARTY_INCLUDE_DIRS}>"
   "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>"
   )
+
+# Add compiler flags for better compatibility
+target_compile_options(${LIBRARY_NAME} PRIVATE
+    -fexceptions
+    -frtti
+    )
